@@ -57,66 +57,109 @@ const Home = () => {
     toast.success('Transaction added successfully!');
   };
 
-  const handleQuestionSubmit = (e) => {
-    e.preventDefault();
-    const newQuestion = {
-      id: Date.now(),
-      question: questionInput,
-      answer: '',
-      date: new Date().toLocaleString()
-    };
-    setQuestions([newQuestion, ...questions]);
-    setQuestionInput('');
-    alert('Question submitted to advisor!');
+  
+  const processUploadedFile = async (fileId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/process-file/${fileId}`, {
+        method: 'POST'
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        toast.success(`Processed ${result.vector_count} vectors`);
+        return true;
+      } else {
+        throw new Error(result.detail || "Processing failed");
+      }
+    } catch (error) {
+      toast.error(error.message);
+      return false;
+    }
   };
-
   const handleFileUpload = async (e) => {
     e.preventDefault();
-    
     if (!selectedFile) {
       toast.error("Please select a file first");
       return;
     }
-  
+
     setIsUploading(true);
     
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
-  
+
       const response = await fetch("http://localhost:8000/upload", {
         method: "POST",
         body: formData,
       });
-  
+
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.detail || "Server error");
+        throw new Error(error.detail || "Upload failed");
       }
-  
+
       const result = await response.json();
+      setCurrentFileId(result.file_id);
       
-      // Add the uploaded file to the files state
       const newFile = {
         id: Date.now(),
         name: selectedFile.name,
         type: selectedFile.name.split('.').pop(),
         size: (selectedFile.size / 1024).toFixed(2) + ' KB',
         date: new Date().toLocaleString(),
-        path: result.saved_path
+        fileId: result.file_id
       };
       
       setFiles([newFile, ...files]);
-      toast.success(`File saved to:\n${result.saved_path}`);
+      toast.success('File uploaded successfully!');
       
     } catch (error) {
-      toast.error(`Upload failed: ${error.message}`);
-      console.error("Upload error:", error);
+      toast.error(error.message);
     } finally {
       setIsUploading(false);
       setSelectedFile(null);
     }
-  };  
+  };
+
+  const handleQuestionSubmit = async (e) => {
+    e.preventDefault();
+    if (!currentFileId) {
+      toast.error("Please upload a file first");
+      return;
+    }
+  
+    try {
+      const response = await fetch("http://localhost:8000/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question: questionInput,
+          filename: currentFileId // Add this
+        }),
+      });
+  
+      const data = await response.json();
+      
+      const newQuestion = {
+        id: Date.now(),
+        question: questionInput,
+        answer: data.answers.join("\n"), // Handle multiple answers
+        confidence: data.confidence,
+        date: new Date().toLocaleString()
+      };
+      
+      setQuestions([newQuestion, ...questions]);
+      setQuestionInput('');
+      toast.success('Question answered!');
+      
+    } catch (error) {
+      toast.error('Failed to get answer: ' + error.message);
+    }
+  }; 
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -343,53 +386,67 @@ const Home = () => {
 
         {/* Questions Tab */}
         {activeTab === 'questions' && (
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">Ask Your Advisor</h2>
-              <form onSubmit={handleQuestionSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Your Question</label>
-                  <textarea
-                    value={questionInput}
-                    onChange={(e) => setQuestionInput(e.target.value)}
-                    className="w-full p-2 border rounded"
-                    rows="4"
-                    required
-                  />
-                </div>
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-                  >
-                    Submit Question
-                  </button>
-                </div>
-              </form>
-            </div>
+  <div className="space-y-6">
+    <div className="bg-white p-6 rounded-lg shadow">
+      <h2 className="text-xl font-semibold mb-4">Ask About Your Data</h2>
+      <form onSubmit={handleQuestionSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Your Question
+            {!currentFileId && (
+              <span className="ml-2 text-red-500">(Upload a file first)</span>
+            )}
+          </label>
+          <textarea
+            value={questionInput}
+            onChange={(e) => setQuestionInput(e.target.value)}
+            className="w-full p-2 border rounded"
+            rows="4"
+            disabled={!currentFileId}
+            required
+          />
+        </div>
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={!currentFileId || !questionInput.trim()}
+            className={`px-4 py-2 text-white rounded ${
+              !currentFileId || !questionInput.trim()
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-purple-600 hover:bg-purple-700'
+            }`}
+          >
+            Ask Question
+          </button>
+        </div>
+      </form>
+    </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">Your Questions</h2>
-              {questions.length > 0 ? (
-                <div className="space-y-4">
-                  {questions.map(q => (
-                    <div key={q.id} className="border-b pb-4 last:border-b-0">
-                      <div className="flex justify-between">
-                        <p className="font-medium">{q.question}</p>
-                        <span className="text-sm text-gray-500">{q.date}</span>
-                      </div>
-                      <p className="mt-2 text-gray-600">
-                        {q.answer || <span className="text-gray-400">Waiting for advisor response...</span>}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">No questions yet</p>
-              )}
+    <div className="bg-white p-6 rounded-lg shadow">
+      <h2 className="text-xl font-semibold mb-4">Question History</h2>
+      {questions.length > 0 ? (
+        <div className="space-y-4">
+          {questions.map(q => (
+            <div key={q.id} className="border-b pb-4 last:border-b-0">
+              <div className="flex justify-between">
+                <p className="font-medium">{q.question}</p>
+                <span className="text-sm text-gray-500">{q.date}</span>
+              </div>
+              <div className="mt-2 p-3 bg-gray-50 rounded">
+                <p className="text-gray-800">{q.answer}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Confidence: {(q.confidence * 100).toFixed(1)}%
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-500">No questions asked yet</p>
+      )}
+    </div>
+  </div>
+)}
 
         {/* Documents Tab */}
         {activeTab === 'documents' && (

@@ -45,4 +45,4 @@ async def upload_file(file: UploadFile = File(...)):
 
 @app.get("/")
 def health_check():
-    return {"status": "Backend is running"}
+    return {"status": "Backend is running"}  
