@@ -1,42 +1,83 @@
-#root {
-  max-width: 1280px;
+body {
+  font-family: 'Courier New', monospace;
+  background-color: #0a0a0a;
+  color: #0aff0a;
+  margin: 0;
+  padding: 0;
+}
+
+.app {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 20px;
+}
+
+.header {
   text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #0aff0a;
+  padding-bottom: 20px;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.query-section, .transaction-section {
+  background-color: #111;
+  padding: 20px;
+  border-radius: 5px;
+  border: 1px solid #0aff0a;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+input, select, button {
+  background-color: #222;
+  color: #0aff0a;
+  border: 1px solid #0aff0a;
+  padding: 8px;
+  margin: 5px 0;
+  font-family: 'Courier New', monospace;
 }
 
-.card {
-  padding: 2em;
+button {
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.read-the-docs {
-  color: #888;
+button:hover {
+  background-color: #0aff0a;
+  color: #000;
+}
+
+.response {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #222;
+  border-left: 3px solid #0aff0a;
+}
+
+.transaction-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.transactions-list {
+  grid-column: span 2;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #0aff0a;
+}
+
+th {
+  background-color: #111;
 }
