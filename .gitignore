@@ -1,0 +1,69 @@
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependency directories
+node_modules/
+bower_components/
+
+# Build directories
+dist/
+dist-ssr/
+out/
+.next/
+.cache/
+build/
+.tmp/
+
+# Python-related files
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+__pycache__/
+venv/
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+
+# Backend-specific
+backend/downloads/
+backend/__pycache__/
+backend/.mypy_cache/
+backend/.pytest_cache/
+backend/.tox/
+
+# Editor directories and files
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+*.iml
+
+# OS-generated files
+*.DS_Store
+*.AppleDouble
+*.LSOverride
+ehthumbs.db
+Icon?
+._*
+
+# Miscellaneous
+*.local
+*.lock
+*.bak
+*.orig
