@@ -13,8 +13,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Absolute path to your downloads folder
-UPLOAD_DIR = Path(r"C:\Users\Vansh\Desktop\finance_tracker\backend\downloads")
+# Relative path to your downloads folder
+UPLOAD_DIR = Path("downloads")
 
 # Create directory if it doesn't exist
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
