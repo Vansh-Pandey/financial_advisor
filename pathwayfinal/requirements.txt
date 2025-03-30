@@ -1,0 +1,5 @@
+os
+pathway[all]
+pathway-stdlib
+pathway-xpacks
+openai
