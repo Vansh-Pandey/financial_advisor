@@ -8,7 +8,7 @@ app = FastAPI()
 # Configure CORS (adjust for your frontend URL)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Your Vite frontend
+    allow_origins=["http://localhost:3001/"],  # Your Vite frontend
     allow_methods=["POST"],
     allow_headers=["*"],
 )
@@ -20,29 +20,30 @@ UPLOAD_DIR = Path("downloads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 @app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_files(files: list[UploadFile] = File(...)):
     try:
-        # Validate file has a name
-        if not file.filename:
-            raise HTTPException(400, detail="No filename provided")
-        
-        # Create complete file path
-        file_path = UPLOAD_DIR / file.filename
-        
-        # Save file in chunks (memory efficient)
-        with open(file_path, "wb") as buffer:
-            while chunk := await file.read(1024 * 1024):  # 1MB chunks
-                buffer.write(chunk)
-        
-        return {
-            "status": "success",
-            "saved_path": str(file_path),
-            "filename": file.filename
-        }
-        
+        saved_files = []
+
+        for file in files:
+            if not file.filename:
+                raise HTTPException(400, detail="No filename provided")
+
+            file_path = UPLOAD_DIR / file.filename
+
+            with open(file_path, "wb") as buffer:
+                while chunk := await file.read(1024 * 1024):  # 1MB chunks
+                    buffer.write(chunk)
+
+            saved_files.append({
+                "filename": file.filename,
+                "saved_path": str(file_path)
+            })
+
+        return {"status": "success", "files": saved_files}
+
     except Exception as e:
         raise HTTPException(500, detail=f"Upload failed: {str(e)}")
 
 @app.get("/")
 def health_check():
-    return {"status": "Backend is running"}  
+    return {"status": "Backend is running"}
