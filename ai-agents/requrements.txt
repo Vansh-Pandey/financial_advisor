@@ -1,0 +1,7 @@
+uagents
+openai
+python-dotenv
+requests
+pydantic
+fastapi
+uvicorn

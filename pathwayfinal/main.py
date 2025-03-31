@@ -3,11 +3,27 @@ import pathway as pw
 from pathway.stdlib.ml.index import KNNIndex
 from pathway.xpacks.llm.embedders import OpenAIEmbedder
 from pathway.xpacks.llm.llms import OpenAIChat, prompt_chat_single_qa
+from dotenv import load_dotenv
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-os.environ['OPENAI_API_KEY'] = ''
+load_dotenv()
+
+os.environ['OPENAI_API_KEY'] = os.getenv("YOUR_OPEN_AI_API_KEY")
 os.environ['PATHWAY_DATA_DIR'] = './data'
 os.environ['PATHWAY_REST_CONNECTOR_HOST'] = '0.0.0.0'
 os.environ['PATHWAY_REST_CONNECTOR_PORT'] = '8003'
+
+app = FastAPI()
+
+# CORS Policy
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class DocumentInputSchema(pw.Schema):
     doc: str
